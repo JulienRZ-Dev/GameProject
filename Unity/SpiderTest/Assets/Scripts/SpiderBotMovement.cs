@@ -2,10 +2,10 @@
 
 public class SpiderBotMovement : MonoBehaviour
 {
-    // UNITY COMPONENTS
-    public Rigidbody2D rb; // the spider rigidbody
-    public SpriteRenderer spriteRenderer; // the spider sprite renderer, will be use to flip the sprite
-    public Animator animator;
+    // SPIDERBOT INFORMATIONS
+    private Rigidbody2D rb; // the spider rigidbody
+    private SpriteRenderer spriteRenderer; // the spider sprite renderer, will be use to flip the sprite
+    private Animator animator;
 
     // TARGET
     public Transform target; // the current target of the spider
@@ -37,6 +37,8 @@ public class SpiderBotMovement : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        animator = GetComponent<Animator>();
         playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
 
         destPointIndex = 1;
