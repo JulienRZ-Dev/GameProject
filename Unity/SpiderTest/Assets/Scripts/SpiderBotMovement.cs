@@ -33,6 +33,7 @@ public class SpiderBotMovement : MonoBehaviour
     private bool hasFocusPlayer; // true when the spider focus the player
     private bool stopSeeking; // the spider should not seek and replace to its zone 
     public float spiderFocusRange; // focus range for the spider ( detection zone )
+    public Transform spiderLaserEye; // The origin of the laser
 
     // SPIDER BOUNDS
     private bool isOutOfBounds;
@@ -43,9 +44,9 @@ public class SpiderBotMovement : MonoBehaviour
         playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
 
         aim.startWidth = 0.05f;
-        aim.endWidth = 0.05f;
+        aim.endWidth = 0.5f;
         Color clear_red = Color.red;
-        clear_red.a = 0.1f;
+        clear_red.a = 0.5f;
         aim.startColor = clear_red;
         aim.endColor = clear_red;
         aim.enabled = false;
@@ -118,24 +119,35 @@ public class SpiderBotMovement : MonoBehaviour
         {
             if((playerTransform.position.x > transform.position.x && currentSpeed > 0) || (playerTransform.position.x < transform.position.x && currentSpeed < 0)) // the spider only focus when its in front of the player
             {
-                if (!hasFocusPlayer)
-                    aim.enabled = true;
-                Aim();
+                if(!hasFocusPlayer)
+                    StartCoroutine(Aim());
                 hasFocusPlayer = true;
             }
         }
         else 
         {
             hasFocusPlayer = false;
-            aim.enabled = false;
         }
     }
 
 
-    public void Aim()
+    public IEnumerator Aim()
     {
-        //aim.enabled = !aim.enabled; //To make the aim flash (clignoter)
-        aim.SetPosition(0, transform.position);
+        speedIsLocked = true;
+        yield return new WaitForSeconds(0.2f);
+        for (int i = 0; i < 6; i++)
+        {
+            UpdateLaserPosition();
+            aim.enabled = !aim.enabled;
+            yield return new WaitForSeconds(0.1f);
+        }
+        speedIsLocked = false;
+    }
+
+
+    public void UpdateLaserPosition()
+    {
+        aim.SetPosition(0, spiderLaserEye.position);
         aim.SetPosition(1, playerTransform.position);
     }
 
