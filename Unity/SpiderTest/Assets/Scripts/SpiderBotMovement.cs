@@ -1,11 +1,13 @@
 ﻿using UnityEngine;
+using System.Collections;
 
 public class SpiderBotMovement : MonoBehaviour
 {
-    // SPIDERBOT INFORMATIONS
-    private Rigidbody2D rb; // the spider rigidbody
-    private SpriteRenderer spriteRenderer; // the spider sprite renderer, will be use to flip the sprite
-    private Animator animator;
+    // UNITY COMPONENTS
+    public Rigidbody2D rb; // the spider rigidbody
+    public SpriteRenderer spriteRenderer; // the spider sprite renderer, will be use to flip the sprite
+    public SpriteRenderer warningSpriteRenderer; // sprite renderer for the warning, will be use to display or hide the skull
+    public Animator animator;
 
     // TARGET
     public Transform target; // the current target of the spider
@@ -22,6 +24,7 @@ public class SpiderBotMovement : MonoBehaviour
     public float maxSpeed; // speed when the spider is in seek mode
     public float casualSpeed; // speed when the spider is in rest mode
     private float currentSpeed;
+    private bool speedIsLocked; // prevent the speed from changing when the spider should freeze
 
     // SMOOTH DAMP
     private float smoothDampTime; // the smoothDampTime value (to smooth the movement more or less)
@@ -37,14 +40,14 @@ public class SpiderBotMovement : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        animator = GetComponent<Animator>();
         playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
+        warningSpriteRenderer.enabled = false; // hide the skull sprite
 
         destPointIndex = 1;
         target = waypoints[destPointIndex];
 
         currentSpeed = casualSpeed;
+        speedIsLocked = false;
 
         smoothDampTime = 0.1f;
 
@@ -57,24 +60,27 @@ public class SpiderBotMovement : MonoBehaviour
 
     void FixedUpdate()
     {
-        OutOfBoundsManager(); // check if the spider is out of its zone, and replace it if yes
-
-        UpdateFocus(); // focus or unfocus the player, change the movement behaviour
-
-        Flip(); // check if the spider should flip according to it's speed
-
-        if (hasFocusPlayer)
+        if (!speedIsLocked) // If the speed is locked, that means that the spider should freeze (i.e. don't move)
         {
-            Seek(); // the spider is seeking the player
-        }
-        else 
-        {
-            Move(); // the spider moves casually, normalize the current speed to casaul speed ( to get the (-) )
-        }
+            OutOfBoundsManager(); // check if the spider is out of its zone, and replace it if yes
 
-        targetVelocity = new Vector2(currentSpeed * Time.fixedDeltaTime, 0f); // Set the new velocity
+            UpdateFocus(); // focus or unfocus the player, change the movement behaviour
+
+            Flip(); // check if the spider should flip according to it's speed
+
+            if (hasFocusPlayer)
+            {
+                Seek(); // the spider is seeking the player
+            }
+            else
+            {
+                Move(); // the spider moves casually, normalize the current speed to casaul speed ( to get the (-) )
+            }
+
+            targetVelocity = new Vector2(currentSpeed * Time.fixedDeltaTime, 0f); // Set the new velocity
+            rb.velocity = Vector3.SmoothDamp(rb.velocity, targetVelocity, ref velocity, smoothDampTime); // apply the movement
+        }
         animator.SetFloat("Speed", Mathf.Abs(rb.velocity.x)); // trigger the animation transition, gives as parameter the absolute speed
-        rb.velocity = Vector3.SmoothDamp(rb.velocity, targetVelocity, ref velocity, smoothDampTime); // apply the movement
     }
 
 
@@ -104,7 +110,13 @@ public class SpiderBotMovement : MonoBehaviour
         if(Mathf.Abs(playerTransform.position.x - transform.position.x) < spiderFocusRange && !isOutOfBounds && !stopSeeking) // the player enters the spider's focus range
         {
             if((playerTransform.position.x > transform.position.x && currentSpeed > 0) || (playerTransform.position.x < transform.position.x && currentSpeed < 0)) // the spider only focus when its in front of the player
-            hasFocusPlayer = true;
+            {
+                if(!hasFocusPlayer)
+                {
+                    StartCoroutine(SpiderFreeze()); // The spider should pause when changing focus for a smoother transition
+                }
+                hasFocusPlayer = true;
+            }
         }
         else 
         {
@@ -113,13 +125,24 @@ public class SpiderBotMovement : MonoBehaviour
     }
 
 
+    public IEnumerator SpiderFreeze()
+    {
+        currentSpeed = 0;
+        warningSpriteRenderer.enabled = true; // shows the skull sprite
+        speedIsLocked = true;
+        yield return new WaitForSeconds(1f);
+        warningSpriteRenderer.enabled = false; // hide the skull sprite
+        speedIsLocked = false;
+    }
+
+
     public void Flip()
     {
-        if(currentSpeed > 0)
+        if(currentSpeed > 0.1)
         {
             spriteRenderer.flipX = false;
         }
-        else
+        else if(currentSpeed < -0.1)
         {
             spriteRenderer.flipX = true;
         }
@@ -129,7 +152,7 @@ public class SpiderBotMovement : MonoBehaviour
     public void Move() // the spider moves casually
     {
         target = waypoints[destPointIndex];
-        smoothDampTime = 0.1f;
+        smoothDampTime = 0f;
 
         if (waypoints[destPointIndex].position.x < transform.position.x) // check where the spider should go and adapt the speed
         {
@@ -144,7 +167,7 @@ public class SpiderBotMovement : MonoBehaviour
         {
             destPointIndex = (destPointIndex + 1) % waypoints.Length; // toggle the waypoint index
             target = waypoints[destPointIndex]; // Toggle the target waypoint
-            
+
             if (stopSeeking) // if the spider was replacing to its zone, ( get ready to seek again when a waypoint is reached )
             {
                 stopSeeking = false; // the spider is ready to seek again
