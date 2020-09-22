@@ -6,8 +6,8 @@ public class SpiderBotMovement : MonoBehaviour
     // UNITY COMPONENTS
     public Rigidbody2D rb; // the spider rigidbody
     public SpriteRenderer spriteRenderer; // the spider sprite renderer, will be use to flip the sprite
-    public SpriteRenderer warningSpriteRenderer; // sprite renderer for the warning, will be use to display or hide the skull
     public Animator animator;
+    public LineRenderer aim; //the spider starts aiming the player to show that he is in its sight
 
     // TARGET
     public Transform target; // the current target of the spider
@@ -41,7 +41,14 @@ public class SpiderBotMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
-        warningSpriteRenderer.enabled = false; // hide the skull sprite
+
+        aim.startWidth = 0.05f;
+        aim.endWidth = 0.05f;
+        Color clear_red = Color.red;
+        clear_red.a = 0.1f;
+        aim.startColor = clear_red;
+        aim.endColor = clear_red;
+        aim.enabled = false;
 
         destPointIndex = 1;
         target = waypoints[destPointIndex];
@@ -111,28 +118,25 @@ public class SpiderBotMovement : MonoBehaviour
         {
             if((playerTransform.position.x > transform.position.x && currentSpeed > 0) || (playerTransform.position.x < transform.position.x && currentSpeed < 0)) // the spider only focus when its in front of the player
             {
-                if(!hasFocusPlayer)
-                {
-                    StartCoroutine(SpiderFreeze()); // The spider should pause when changing focus for a smoother transition
-                }
+                if (!hasFocusPlayer)
+                    aim.enabled = true;
+                Aim();
                 hasFocusPlayer = true;
             }
         }
         else 
         {
             hasFocusPlayer = false;
+            aim.enabled = false;
         }
     }
 
 
-    public IEnumerator SpiderFreeze()
+    public void Aim()
     {
-        currentSpeed = 0;
-        warningSpriteRenderer.enabled = true; // shows the skull sprite
-        speedIsLocked = true;
-        yield return new WaitForSeconds(1f);
-        warningSpriteRenderer.enabled = false; // hide the skull sprite
-        speedIsLocked = false;
+        //aim.enabled = !aim.enabled; //To make the aim flash (clignoter)
+        aim.SetPosition(0, transform.position);
+        aim.SetPosition(1, playerTransform.position);
     }
 
 
