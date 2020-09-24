@@ -3,7 +3,8 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Hookable
   layers:
   - Default
   - TransparentFX
@@ -13,9 +14,9 @@ TagManager:
   - UI
   - 
   - 
-  - 
-  - 
-  - 
+  - Platforms
+  - Ennemies
+  - Collectibles
   - 
   - 
   - 
@@ -40,4 +41,37 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Background 0
+    uniqueID: 3237395793
+    locked: 0
+  - name: Background 1
+    uniqueID: 3047627665
+    locked: 0
+  - name: Background 2
+    uniqueID: 1803203753
+    locked: 0
+  - name: Decoration (behind platforms)
+    uniqueID: 111417439
+    locked: 0
+  - name: Platforms
+    uniqueID: 3743549987
+    locked: 0
+  - name: Collectibles
+    uniqueID: 1615661369
+    locked: 0
+  - name: Ennemies
+    uniqueID: 2058546521
+    locked: 0
+  - name: Player
+    uniqueID: 3392611427
+    locked: 0
+  - name: Decoration (in front of platforms)
+    uniqueID: 1848036477
+    locked: 0
+  - name: Foreground 0
+    uniqueID: 955726717
+    locked: 0
+  - name: Foreground 1
+    uniqueID: 3645687031
     locked: 0
