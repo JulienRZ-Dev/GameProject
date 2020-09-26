@@ -144,7 +144,11 @@ public class CharacterController2D : MonoBehaviour
 			jumpTimeCounter = jumpTime;
 		}
 
-		if (hold_jump && !m_Grounded && jumpTimeCounter > 0)
+		if (!hold_jump)
+        {
+			jumpTimeCounter = 0;
+        }
+		else if (!m_Grounded && jumpTimeCounter > 0)
         {
 			m_Rigidbody2D.velocity = new Vector2(m_Rigidbody2D.velocity.x, m_JumpForce);
 			jumpTimeCounter -= Time.deltaTime;
