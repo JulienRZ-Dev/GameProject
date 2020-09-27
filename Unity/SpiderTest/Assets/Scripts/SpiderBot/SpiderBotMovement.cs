@@ -117,7 +117,7 @@ public class SpiderBotMovement : MonoBehaviour
     {
         if(Mathf.Abs(playerTransform.position.x - transform.position.x) < spiderFocusRange && !isOutOfBounds && !stopSeeking) // the player enters the spider's focus range
         {
-            if((playerTransform.position.x > transform.position.x && currentSpeed > 0) || (playerTransform.position.x < transform.position.x && currentSpeed < 0) || (playerTransform.position.x - transform.position.x) < (spiderFocusRange / 4)) // the spider only focus when its in front of the player
+            if((playerTransform.position.x > transform.position.x && currentSpeed > 0) || (playerTransform.position.x < transform.position.x && currentSpeed < 0) || (playerTransform.position.x - transform.position.x) < (spiderFocusRange / 2)) // the spider only focus when its in front of the player
             {
                 if((playerTransform.position.x - transform.position.x) < (spiderFocusRange / 4))
                 {
@@ -135,7 +135,7 @@ public class SpiderBotMovement : MonoBehaviour
     }
 
 
-    public IEnumerator Aim()
+    public IEnumerator Aim() // Display the laser focus
     {
         speedIsLocked = true;
         yield return new WaitForSeconds(0.2f);
